@@ -5,6 +5,11 @@ const Anthropic=require('@anthropic-ai/sdk');
 const app=express();
 app.use(cors());
 app.use(express.json());
+app.use((req,res,next)=>{
+  res.setHeader('X-Frame-Options','ALLOWALL');
+  res.setHeader('Content-Security-Policy','frame-ancestors *');
+  next();
+});
 const client=new Anthropic();
 const sessions=new Map();
 
