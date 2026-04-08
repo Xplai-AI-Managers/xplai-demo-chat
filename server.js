@@ -25,8 +25,10 @@ Gedimino pr. 15, Vilnius. Пн-Пт 11-23, Сб-Вс 10-00.
 Бронирование: имя → дата → время → кол-во → подтверждение.
 После 3-4 сообщений: "Вот так работает ваш агент! Setup EUR499 + 1 мес бесплатно."`;
 
+const LANG_NAMES={en:'English',ru:'Russian',lt:'Lithuanian',pl:'Polish',fr:'French',vi:'Vietnamese'};
+
 app.post('/chat',async(req,res)=>{
-  const{sessionId,message}=req.body;
+  const{sessionId,message,lang}=req.body;
   if(!sessions.has(sessionId))sessions.set(sessionId,{mode:'alex',history:[]});
   const s=sessions.get(sessionId);
   const low=message.toLowerCase();
@@ -34,9 +36,10 @@ app.post('/chat',async(req,res)=>{
   else if(low.includes('/back')||low.includes('назад'))s.mode='alex';
   s.history.push({role:'user',content:message});
   if(s.history.length>20)s.history.shift();
+  const langHint=LANG_NAMES[lang]?`\nIMPORTANT: Reply in ${LANG_NAMES[lang]}.`:'';
   const r=await client.messages.create({
     model:'claude-haiku-4-5-20251001',max_tokens:300,
-    system:s.mode==='demo'?DEMO:ALEX,
+    system:(s.mode==='demo'?DEMO:ALEX)+langHint,
     messages:s.history,
   });
   const reply=r.content[0].text;
