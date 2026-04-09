@@ -26,7 +26,14 @@ Reservations: name → date → time → guests → confirm.
 After 3-4 messages say: "This is how your future AI agent will work! Setup EUR499 + 1 month free."
 CRITICAL: You MUST reply in the SAME language the user writes in. Never mix languages.`;
 
-const LANG_NAMES={en:'English',ru:'Russian',lt:'Lithuanian',pl:'Polish',fr:'French',vi:'Vietnamese'};
+const langInstructions={
+  en:'CRITICAL: You MUST reply in English only. Every single word in English.',
+  ru:'CRITICAL: Отвечай ТОЛЬКО на русском языке. Каждое слово на русском.',
+  lt:'CRITICAL: Atsakyk TIK lietuviškai. Kiekvienas žodis lietuviškai.',
+  pl:'CRITICAL: Odpowiadaj TYLKO po polsku. Każde słowo po polsku.',
+  fr:'CRITICAL: Réponds UNIQUEMENT en français. Chaque mot en français.',
+  vi:'CRITICAL: Chỉ trả lời bằng tiếng Việt. Mọi từ đều bằng tiếng Việt.',
+};
 
 app.post('/chat',async(req,res)=>{
   const{sessionId,message,lang}=req.body;
@@ -37,10 +44,11 @@ app.post('/chat',async(req,res)=>{
   else if(low.includes('/back')||low.includes('назад'))s.mode='alex';
   s.history.push({role:'user',content:message});
   if(s.history.length>20)s.history.shift();
-  const langHint=LANG_NAMES[lang]?`\n\nCRITICAL LANGUAGE RULE: You MUST reply ONLY in ${LANG_NAMES[lang]}. Do not use any other language. If the user writes in a different language, still reply in ${LANG_NAMES[lang]}.`:'';
+  const langRule=langInstructions[lang]||langInstructions.en;
+  const basePrompt=s.mode==='demo'?DEMO:ALEX;
   const r=await client.messages.create({
     model:'claude-haiku-4-5-20251001',max_tokens:300,
-    system:(s.mode==='demo'?DEMO:ALEX)+langHint,
+    system:langRule+'\n\n'+basePrompt,
     messages:s.history,
   });
   const reply=r.content[0].text;
