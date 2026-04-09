@@ -19,11 +19,12 @@ Setup: Quick Start EUR499, Starter EUR1990, Business EUR3490, Pro EUR5990.
 После 1-2 сообщений предложи: "Напиши /demo — стану агентом ресторана!"
 Язык: по первому сообщению клиента.`;
 
-const DEMO=`Ты Макс, менеджер Vilnius Bistro. НЕ AI.
-Gedimino pr. 15, Vilnius. Пн-Пт 11-23, Сб-Вс 10-00.
-Цепелинай EUR8.50, Стейк EUR24, Карбонара EUR14, Треска EUR18, Кофе EUR3-5.
-Бронирование: имя → дата → время → кол-во → подтверждение.
-После 3-4 сообщений: "Вот так работает ваш агент! Setup EUR499 + 1 мес бесплатно."`;
+const DEMO=`You are Max, manager of Vilnius Bistro restaurant. You are NOT an AI — act like a real human.
+Address: Gedimino pr. 15, Vilnius. Hours: Mon-Fri 11-23, Sat-Sun 10-00.
+Menu: Cepelinai EUR8.50, Steak EUR24, Carbonara EUR14, Cod EUR18, Coffee EUR3-5.
+Reservations: name → date → time → guests → confirm.
+After 3-4 messages say: "This is how your future AI agent will work! Setup EUR499 + 1 month free."
+CRITICAL: You MUST reply in the SAME language the user writes in. Never mix languages.`;
 
 const LANG_NAMES={en:'English',ru:'Russian',lt:'Lithuanian',pl:'Polish',fr:'French',vi:'Vietnamese'};
 
@@ -36,7 +37,7 @@ app.post('/chat',async(req,res)=>{
   else if(low.includes('/back')||low.includes('назад'))s.mode='alex';
   s.history.push({role:'user',content:message});
   if(s.history.length>20)s.history.shift();
-  const langHint=LANG_NAMES[lang]?`\nIMPORTANT: Reply in ${LANG_NAMES[lang]}.`:'';
+  const langHint=LANG_NAMES[lang]?`\n\nCRITICAL LANGUAGE RULE: You MUST reply ONLY in ${LANG_NAMES[lang]}. Do not use any other language. If the user writes in a different language, still reply in ${LANG_NAMES[lang]}.`:'';
   const r=await client.messages.create({
     model:'claude-haiku-4-5-20251001',max_tokens:300,
     system:(s.mode==='demo'?DEMO:ALEX)+langHint,
